@@ -113,9 +113,13 @@ class WallFollower(Node):
         """
         Compute distance to front wall and stop the car if the wall is too close
         """
+        # distance from wall to stop the car
         distance_needed_to_stop = self.VELOCITY * 1/3
+        # LIDAR scans from the front of the car
         front_data = np.array(self.return_data(msg.ranges, 1))
+        # Angle values of the lidar scans
         middle_angles = np.array(np.cos(self.return_data(np.arange(msg.angle_min, msg.angle_max, msg.angle_increment).tolist(), 1)))
+        # scaled distance due to angle
         true_dist = np.multiply(middle_angles, front_data)
         if np.median(true_dist) < distance_needed_to_stop:
             return 0.0

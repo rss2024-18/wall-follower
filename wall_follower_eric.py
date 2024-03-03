@@ -24,18 +24,10 @@ class WallFollower(Node):
         # Fetch constants from the ROS parameter server
         self.SCAN_TOPIC = self.get_parameter('scan_topic').get_parameter_value().string_value
         self.DRIVE_TOPIC = self.get_parameter('drive_topic').get_parameter_value().string_value
-        self.SIDE = self.get_parameter('side').get_parameter_value().integer_value
-        self.VELOCITY = self.get_parameter('velocity').get_parameter_value().double_value
-        self.DESIRED_DISTANCE = self.get_parameter('desired_distance').get_parameter_value().double_value
         self.prev_time = None
         self.dt = 0
         self.prev_error = None
         self.de = 0
-
-        #Negative side is right wall
-        # self.SIDE = 1
-        # self.VELOCITY = 2.0
-        # self.DESIRED_DISTANCE = 2
 	
         self.subscription = self.create_subscription(LaserScan, self.SCAN_TOPIC, self.lidar_callback, 10)
         self.publisher = self.create_publisher(AckermannDriveStamped, self.DRIVE_TOPIC, 10)
@@ -44,21 +36,9 @@ class WallFollower(Node):
         """
         Process Lidar data
         """
-        ranges = msg.ranges
-        angle_min = msg.angle_min
-        angle_max = msg.angle_max
-        angle_increment = msg.angle_increment
-        center_angle = (angle_min + angle_max)/2
-        left_angle = center_angle + np.pi/2
-        right_angle = center_angle + np.pi/2
-        between_forward_and_sides = np.pi/2 / angle_increment
-        left_distance = ranges[int(len(ranges)/2 + between_forward_and_sides)]
-        right_distance = ranges[int(len(ranges)/2 - between_forward_and_sides)]
-
         self.SIDE = self.get_parameter('side').get_parameter_value().integer_value
-        # self.VELOCITY = self.get_parameter('velocity').get_parameter_value().double_value
+        self.VELOCITY = self.get_parameter('velocity').get_parameter_value().double_value
         self.DESIRED_DISTANCE = self.get_parameter('desired_distance').get_parameter_value().double_value
-        self.VELOCTY = 4.0
 
         curr_time = time.time()
 
@@ -73,14 +53,13 @@ class WallFollower(Node):
 
         steer = self.PD_controller(error, error_derivative)
 
-        # detect = self.safety_control(msg)
+        detect = self.safety_control(msg)
 
         # self.get_logger().info('LIDAR ranges: {}\n{}\n\n'.format(detect))
 
         drive_msg = AckermannDriveStamped()
         drive_msg.header.stamp = self.get_clock().now().to_msg()
-        drive_msg.drive.speed = self.VELOCITY
-        # Positive steering angle goes left
+        drive_msg.drive.speed = detect
         drive_msg.drive.steering_angle = steer
 
         self.publisher.publish(drive_msg)
@@ -94,13 +73,9 @@ class WallFollower(Node):
         front_middle_divider = int(len(ranges) * 16/33)
         total_length = int(len(ranges))
         bls = ranges[total_length - back_front_divider:total_length]
-        # fls = ranges[total_length - front_middle_divider:total_length - back_front_divider]
         ms = ranges[front_middle_divider:total_length - front_middle_divider]
-        # frs = ranges[back_front_divider:front_middle_divider]
         brs = ranges[0:back_front_divider]
         return {'brs': brs, "ms": ms, "bls" : bls}
-
-        # return {'brs': brs, "frs": frs, "ms": ms, "fls": fls,"bls" : bls}
     
     def return_data(self, data, flag = 0):
         """
@@ -131,8 +106,6 @@ class WallFollower(Node):
         weights = np.flip(np.linspace(.7, 1.5, len(real_data)))
         error = self.SIDE*-1*(goal - real_data)
         #If error is positive, car is to the right
-        # return np.sum(error)
-
         return np.sum(np.multiply(weights, error))
 
 
@@ -151,8 +124,7 @@ class WallFollower(Node):
     def PD_controller(self, error, error_derivative):
         kd = 0.008
         #0.01 seems to be a good value for kp
-        kp = 0.01
-        
+        kp = 0.01       
         steering_angle = kp * error + max(min(kd * error_derivative, 0.34), -0.34)
         return max(min(steering_angle, 0.34), -0.34)
 

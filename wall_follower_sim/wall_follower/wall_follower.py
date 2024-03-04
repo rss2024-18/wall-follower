@@ -152,9 +152,9 @@ class WallFollower(Node):
         return self.VELOCITY
     
     def PD_controller(self, error, error_derivative):
-        kd = 0.3
+        kd = 0.03
         #0.01 seems to be a good value for kp
-        kp = 0.2
+        kp = 0.01
         
         steering_angle = kp * error + max(min(kd * error_derivative, 0.34), -0.34)
         return max(min(steering_angle, 0.34), -0.34)

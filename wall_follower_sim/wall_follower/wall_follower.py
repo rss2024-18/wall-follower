@@ -4,7 +4,8 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import LaserScan
 from ackermann_msgs.msg import AckermannDriveStamped
-# from visualization_msgs.msg import Markerimport time
+from visualization_msgs.msg import Marker 
+import time
 
 from wall_follower.visualization_tools import VisualizationTools
 
@@ -26,7 +27,7 @@ class WallFollower(Node):
         self.SIDE = self.get_parameter('side').get_parameter_value().integer_value
         # self.VELOCITY = self.get_parameter('velocity').get_parameter_value().double_value
         self.DESIRED_DISTANCE = self.get_parameter('desired_distance').get_parameter_value().double_value
-        self.VELOCTY = 1.0
+        self.VELOCITY = 1.0
 
         self.prev_time = None
         self.dt = 0

@@ -24,8 +24,10 @@ class WallFollower(Node):
         self.SCAN_TOPIC = self.get_parameter('scan_topic').get_parameter_value().string_value
         self.DRIVE_TOPIC = self.get_parameter('drive_topic').get_parameter_value().string_value
         self.SIDE = self.get_parameter('side').get_parameter_value().integer_value
-        self.VELOCITY = self.get_parameter('velocity').get_parameter_value().double_value
+        # self.VELOCITY = self.get_parameter('velocity').get_parameter_value().double_value
         self.DESIRED_DISTANCE = self.get_parameter('desired_distance').get_parameter_value().double_value
+        self.VELOCTY = 1.0
+
         self.prev_time = None
         self.dt = 0
         self.prev_error = None
@@ -34,7 +36,7 @@ class WallFollower(Node):
         #Negative side is right wall
         # self.SIDE = 1
         # self.VELOCITY = 2.0
-            # self.DESIRED_DISTANCE = 2
+        # self.DESIRED_DISTANCE = 2
 	
         self.subscription = self.create_subscription(LaserScan, self.SCAN_TOPIC, self.lidar_callback, 10)
         self.publisher = self.create_publisher(AckermannDriveStamped, self.DRIVE_TOPIC, 10)
@@ -53,11 +55,6 @@ class WallFollower(Node):
         between_forward_and_sides = np.pi/2 / angle_increment
         left_distance = ranges[int(len(ranges)/2 + between_forward_and_sides)]
         right_distance = ranges[int(len(ranges)/2 - between_forward_and_sides)]
-
-        self.SIDE = self.get_parameter('side').get_parameter_value().integer_value
-        # self.VELOCITY = self.get_parameter('velocity').get_parameter_value().double_value
-        self.DESIRED_DISTANCE = self.get_parameter('desired_distance').get_parameter_value().double_value
-        self.VELOCTY = 1.0
 
         curr_time = time.time()
 

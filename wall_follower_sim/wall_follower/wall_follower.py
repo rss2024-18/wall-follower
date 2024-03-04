@@ -57,7 +57,7 @@ class WallFollower(Node):
         self.SIDE = self.get_parameter('side').get_parameter_value().integer_value
         # self.VELOCITY = self.get_parameter('velocity').get_parameter_value().double_value
         self.DESIRED_DISTANCE = self.get_parameter('desired_distance').get_parameter_value().double_value
-        self.VELOCTY = 4.0
+        self.VELOCTY = 1.0
 
         curr_time = time.time()
 

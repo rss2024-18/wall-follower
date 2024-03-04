@@ -69,15 +69,15 @@ class WallFollower(Node):
 
         steer = self.PD_controller(error, error_derivative)
 
-        # detect = self.safety_control(msg)
+        detect = self.safety_control(msg)
 
         # self.get_logger().info('LIDAR ranges: {}\n{}\n\n'.format(detect))
 
         drive_msg = AckermannDriveStamped()
         drive_msg.header.stamp = self.get_clock().now().to_msg()
-        drive_msg.drive.speed = self.VELOCITY
+        drive_msg.drive.speed = detect
         # Positive steering angle goes left
-        drive_msg.drive.steering_angle = steer
+        drive_msg.drive.steering_angle = 0.0
 
         self.publisher.publish(drive_msg)
         self.dt = time.time() - curr_time

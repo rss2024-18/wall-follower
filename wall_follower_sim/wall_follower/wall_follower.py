@@ -116,7 +116,7 @@ class WallFollower(Node):
         #self.get_logger().info("error  " + str(error))
         #write drive instructions
         msg = AckermannDriveStamped()
-        msg.drive.speed = self.VELOCITY
+        msg.drive.speed = self.safety_controller(self.laserScan.ranges)
 
         change = self.pid(error, self.prev_error)
         self.prev_error = error
